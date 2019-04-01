@@ -4,15 +4,9 @@ context('alluvial wide')
 test_that('alluvial_wide'
   ,{
 
-    data = as_tibble(mtcars) %>%
-      mutate( ids = row_number() )
+    data = mtcars2
 
-    categoricals = c('cyl', 'vs', 'am', 'gear', 'carb')
-    numericals = c('mpg', 'cyl', 'disp', 'hp', 'drat', 'wt', 'qsec')
     max_variables = 5
-
-    data = data %>%
-      mutate_at( vars(categoricals), as.factor )
 
     p = alluvial_wide( data = data
                     , max_variables = max_variables
@@ -50,7 +44,7 @@ test_that('alluvial_wide'
     #check integritiy of returned dataframe
     expect_equal( nrow(data), nrow(p$data_key) )
 
-    # ids
+    # id
 
     p = alluvial_wide(data, id = ids )
     expect_true( ! 'ID' %in% names(p$data_key) )
@@ -109,13 +103,42 @@ test_that('alluvial_wide'
 
     expect_warning( alluvial_wide( data = ggplot2::diamonds) )
     
-    # alluvial_wide(data, max_variables = 3, col_vector_flow = c('red', 'green', 'orange', 'yellow', 'blue')
-    # , col_vector_value =  c('red', 'green', 'orange', 'yellow', 'blue'), fill_by = 'last_variable' )
-    
     #gouped df
     
-    p = alluvial_wide( group_by(data, cylinders) )
-
+    p = alluvial_wide( group_by(mtcars2, cyl), max_variables = 3 )
+    
+    # plot attachments
+    
+    expect_true( all( c('data_key', 'alluvial_type', 'alluvial_params') %in% names(p) ) )
+    
+    # color of stratum same as fill variable
+    
+    p = alluvial_wide( data = data
+                       , max_variables = max_variables
+                       , fill_by = 'first_variable' 
+                       , colorful_fill_variable_stratum = T)
+    
+    # renders differently on mac
+    # vdiffr::expect_doppelganger('colorful_fill_variable_stratum', p)
+    
+    p = alluvial_wide( data = data
+                       , max_variables = max_variables
+                       , fill_by = 'last_variable' 
+                       , colorful_fill_variable_stratum = T)
+    
+    p = alluvial_wide( data = data
+                       , max_variables = max_variables
+                       , fill_by = 'all_flows' 
+                       , colorful_fill_variable_stratum = T)
+    
+    p = alluvial_wide( data = data
+                       , max_variables = max_variables
+                       , fill_by = 'values' 
+                       , colorful_fill_variable_stratum = T
+                       , col_vector_value = palette_qualitative() %>% palette_filter( greys = F) 
+                       )
+    
+    
   })
 
 

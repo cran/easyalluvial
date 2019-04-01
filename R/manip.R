@@ -56,11 +56,12 @@ manip_factor_2_numeric = function(vec){
 #' @param round_numeric, logical, rounds numeric results if bin_labels is
 #' supplied with a supported summary function name.
 #' @param digits, integer, number of digits to round to
+#' @param NA_label character vector, define label for missing data, Default: 'NA'
 #' @examples
-#' summary( mtcars )
-#' summary( manip_bin_numerics(mtcars) )
-#' summary( manip_bin_numerics(mtcars, bin_labels = 'mean'))
-#' summary( manip_bin_numerics(mtcars, bin_labels = 'cuts'
+#' summary( mtcars2 )
+#' summary( manip_bin_numerics(mtcars2) )
+#' summary( manip_bin_numerics(mtcars2, bin_labels = 'mean'))
+#' summary( manip_bin_numerics(mtcars2, bin_labels = 'cuts'
 #'   , scale = FALSE, center = FALSE, transform = FALSE))
 #' @return dataframe
 #' @rdname manip_bin_numerics
@@ -75,7 +76,8 @@ manip_bin_numerics = function(x
                               , scale = T
                               , transform = T
                               , round_numeric = T
-                              , digits = 2 ){
+                              , digits = 2
+                              , NA_label = 'NA'){
 
   # check if input is vector or dataframe, conv vec to df
   if(purrr::is_bare_numeric(x)){
@@ -90,23 +92,30 @@ manip_bin_numerics = function(x
 
   requireNamespace('recipes')
 
-  if( length(bin_labels) != bins & ! bin_labels[1] %in% c('median', 'cuts', 'mean', 'min_max') ){
+  if( length(bin_labels) != bins[1] & ! bin_labels[1] %in% c('median', 'cuts', 'mean', 'min_max') ){
     stop( "bin_labels length must be equal to bins or one of  c('median', 'cuts', 'mean', 'min_max')")
   }
 
   numerics = df %>%
     select_if( is.numeric ) %>%
-    select_if( function(x) var(x) > 0 ) %>%  ##boxplotstats produces NA if var == 0
+    select_if( function(x) var(x, na.rm = T) > 0 ) %>%  ##boxplotstats produces NA if var == 0
     names()
+  
+  characters = df %>%
+    select_if( is.character ) %>%
+    names()
+  
+  columns = names(df)
 
   if( is_empty(numerics) ){
     return( df )
   }
 
+  # we need to assign an ID to restore the correct order at the end
   df = mutate(df, easyalluvialid = row_number() ) 
   
   rec = recipe(df) %>%
-    add_role( easyalluvialid, new_role = 'id variable')
+    update_role( easyalluvialid, new_role = 'id variable') 
 
   if( center ) rec = rec %>%
     step_center( one_of(numerics) )
@@ -130,11 +139,14 @@ manip_bin_numerics = function(x
                                                    , max(boxplot.stats(x)$stats)
                                                    , x)
                ) %>%
-  mutate_at( vars(numerics), function(x) ifelse( x < min(boxplot.stats(x)$stats)
-                                                 , min(boxplot.stats(x)$stats)
-                                                 , x)
-             ) %>%
-  mutate_at( vars(numerics), function(x) cut(x, breaks = bins) ) 
+    mutate_at( vars(numerics), function(x) ifelse( x < min(boxplot.stats(x)$stats)
+                                                   , min(boxplot.stats(x)$stats)
+                                                   , x)
+               ) %>%
+    mutate_at( vars(numerics), function(x) cut(x, breaks = bins) ) %>%
+    #bake() is converting character variables to factor which we need to revert
+    mutate_at( vars(characters), as.character ) 
+  
   
   summary_as_label = function(df, df_old, fun){
     # joins df with original dataframe. Groups by segments and calculates
@@ -142,6 +154,7 @@ manip_bin_numerics = function(x
     # labels
     
     df = df %>%
+      mutate_if(is.factor, fct_explicit_na, na_level = NA_label ) %>%
       left_join( select(df_old, one_of( c(numerics, 'easyalluvialid') ) ), by = 'easyalluvialid')
     
     for(num in numerics){
@@ -162,19 +175,21 @@ manip_bin_numerics = function(x
     
     df = df %>%
       mutate_if(is.numeric, as.factor ) %>%
+      mutate_if(is.factor, fct_explicit_na, na_level = NA_label ) %>%
       rename_at( vars( ends_with('.y') ) , .funs = function(x) str_replace(x, '\\.y$', '') )
     
     return(df)
     
   }
   
-  if( length(bin_labels) == bins ){
+  if( length(bin_labels) == bins[1] ){
     
     data_new = data_new %>%
-      mutate_at( vars(numerics),  rename_levels)
+      mutate_at( vars(numerics),  rename_levels) 
     
   }else if( bin_labels == 'median'){
-    data_new = summary_as_label(data_new, df_old = df, fun = median)
+    data_new = data_new  %>%
+      summary_as_label(df_old = df, fun = median) 
   }else if( bin_labels == 'mean'){
     data_new = summary_as_label(data_new, df_old = df, fun = mean)
   }else if( bin_labels == 'min_max'){
@@ -195,16 +210,26 @@ manip_bin_numerics = function(x
       data_new = data_new %>%
         arrange( !! sym_min ) %>%
         mutate( !! as.name( num ) := map2_chr( !! sym_max, !! sym_min, function(x,y) paste(x,'-\n',y) ) ) %>%
-        mutate( !! as.name( num ) := as_factor(!! as.name( num ) ) ) 
+        mutate( !! as.name( num ) := as_factor(!! as.name( num ) ) )
+      
+      NA_min_max = paste(NA_label,'-\n',NA_label)
+      
+      if( NA_min_max %in% levels(data_new[[num]]) ){
+        data_new = data_new %>%
+          mutate( !! as.name( num ) := fct_recode(!! as.name( num )
+                                                  , !! as.name(NA_label) := NA_min_max  ))
+      }
     }
     
     data_new = data_new %>%
-      select( -ends_with('.x'), -ends_with('.y') )
+      select( -ends_with('.x'), -ends_with('.y') ) %>%
+      arrange( easyalluvialid )
+    
   }
   
-  
   #remove easyalluvialid
-  data_new = select(data_new, - easyalluvialid)
+  data_new = select(data_new, columns) %>%
+    mutate_if( is.factor, fct_explicit_na, na_level = NA_label )
   
   if( input_vector ){
     return( data_new$x )

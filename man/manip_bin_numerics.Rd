@@ -6,7 +6,7 @@
 \usage{
 manip_bin_numerics(x, bins = 5, bin_labels = c("LL", "ML", "M", "MH",
   "HH"), center = T, scale = T, transform = T, round_numeric = T,
-  digits = 2)
+  digits = 2, NA_label = "NA")
 }
 \arguments{
 \item{x}{dataframe with numeric variables, or numeric vector}
@@ -27,6 +27,8 @@ manip_bin_numerics(x, bins = 5, bin_labels = c("LL", "ML", "M", "MH",
 supplied with a supported summary function name.}
 
 \item{digits, }{integer, number of digits to round to}
+
+\item{NA_label}{character vector, define label for missing data, Default: 'NA'}
 }
 \value{
 dataframe
@@ -37,9 +39,9 @@ centers, scales and Yeo Johnson transforms numeric variables in
   boxplot stats are capped (set to min or max of boxplot stats).
 }
 \examples{
-summary( mtcars )
-summary( manip_bin_numerics(mtcars) )
-summary( manip_bin_numerics(mtcars, bin_labels = 'mean'))
-summary( manip_bin_numerics(mtcars, bin_labels = 'cuts'
+summary( mtcars2 )
+summary( manip_bin_numerics(mtcars2) )
+summary( manip_bin_numerics(mtcars2, bin_labels = 'mean'))
+summary( manip_bin_numerics(mtcars2, bin_labels = 'cuts'
   , scale = FALSE, center = FALSE, transform = FALSE))
 }

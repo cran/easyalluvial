@@ -9,23 +9,24 @@ alluvial_wide(data, id = NULL, max_variables = 20, bins = 5,
   order_levels = NULL, fill_by = "first_variable",
   col_vector_flow = palette_qualitative() \%>\% palette_filter(greys =
   F), col_vector_value = RColorBrewer::brewer.pal(9, "Greys")[c(4, 7, 5,
-  8, 6)], verbose = F, stratum_labels = T, stratum_width = 1/4,
-  auto_rotate_xlabs = T)
+  8, 6)], colorful_fill_variable_stratum = T, verbose = F,
+  stratum_labels = T, stratum_label_size = 4.5, stratum_width = 1/4,
+  auto_rotate_xlabs = T, ...)
 }
 \arguments{
 \item{data}{a dataframe}
 
-\item{id}{unquoted column name of id column or character vector with id
-column name}
+\item{id}{unquoted column name of id column or character vector with id column
+name}
 
 \item{max_variables}{maximum number of variables, Default: 20}
 
 \item{bins}{number of bins for numerical variables, Default: 5}
 
-\item{bin_labels}{labels for the bins from low to high, Default: c("LL",
-"ML", "M", "MH", "HH")}
+\item{bin_labels}{labels for the bins from low to high, Default: c("LL", "ML",
+"M", "MH", "HH")}
 
-\item{NA_label}{character vector define label for missing data, Default: 'NA'}
+\item{NA_label}{character vector, define label for missing data, Default: 'NA'}
 
 \item{order_levels}{character vector denoting levels to be reordered from low
 to high}
@@ -39,73 +40,69 @@ F)}
 \item{col_vector_value}{Hex colors for y levels/values, Default:
 RColorBrewer::brewer.pal(9, "Greys")[c(3, 6, 4, 7, 5)]}
 
+\item{colorful_fill_variable_stratum}{logical, use flow colors to colorize
+fill variable stratum, Default: TRUE}
+
 \item{verbose}{logical, print plot summary, Default: F}
 
 \item{stratum_labels}{logical, Default: TRUE}
 
+\item{stratum_label_size}{numeric, Default: 4.5}
+
 \item{stratum_width}{double, Default: 1/4}
 
 \item{auto_rotate_xlabs}{logical, Default: TRUE}
+
+\item{...}{additional arguments passed to
+\code{\link[easyalluvial]{manip_bin_numerics}}}
 }
 \value{
 ggplot2 object
 }
 \description{
 plots a dataframe as an alluvial plot. All numerical variables
-  are scaled, centered and YeoJohnson transformed before binning. Plots all
-  variables in the sequence as they appear in the dataframe until maximum
-  number of values is reached.
+ are scaled, centered and YeoJohnson transformed before binning. Plots all
+ variables in the sequence as they appear in the dataframe until maximum
+ number of values is reached.
 }
 \details{
 Under the hood this function converts the wide format into long
-  format. ggalluvial also offers a way to make alluvial plots directly from
-  wide format tables but it does not allow individual colouring of the
-  stratum segments. The tradeoff is that we can only order levels as a whole
-  and not individually by variable, Thus if some variables have levels with
-  the same name the order will be the same. If we want to change level order
-  independently we have to assign unique level names first.
+ format. ggalluvial also offers a way to make alluvial plots directly from
+ wide format tables but it does not allow individual colouring of the stratum
+ segments. The tradeoff is that we can only order levels as a whole and not
+ individually by variable, Thus if some variables have levels with the same
+ name the order will be the same. If we want to change level order
+ independently we have to assign unique level names first.
 }
 \examples{
-
-require(magrittr)
-require(dplyr)
-
-data = as_tibble(mtcars)
-categoricals = c('cyl', 'vs', 'am', 'gear', 'carb')
-numericals = c('mpg', 'cyl', 'disp', 'hp', 'drat', 'wt', 'qsec')
-max_variables = 5
-
-data = data \%>\%
-  mutate_at( vars(categoricals), as.factor )
-
-
-alluvial_wide( data = data
-                , max_variables = max_variables
+alluvial_wide( data = mtcars2, id = ids
+                , max_variables = 5
                 , fill_by = 'first_variable' )
 \dontrun{
 
 # more coloring variants----------------------
-alluvial_wide( data = data
-                , max_variables = max_variables
+alluvial_wide( data = mtcars2, id = ids
+                , max_variables = 5
                 , fill_by = 'last_variable' )
 
-alluvial_wide( data = data
-                , max_variables = max_variables
+alluvial_wide( data = mtcars2, id = ids
+                , max_variables = 5
                 , fill_by = 'all_flows' )
 
-alluvial_wide( data = data
-                , max_variables = max_variables
+alluvial_wide( data = mtcars2, id = ids
+                , max_variables = 5
                 , fill_by = 'first_variable' )
 
-# manually order variable values---------------
+# manually order variable values and colour by stratum value
 
-alluvial_wide( data = data
-                 , max_variables = max_variables
+alluvial_wide( data = mtcars2, id = ids
+                 , max_variables = 5
                  , fill_by = 'values'
-                 , order_levels = c('1', '0') )
+                 , order_levels = c('4', '8', '6') )
 }
 }
 \seealso{
-\code{\link[easyalluvial]{alluvial_wide}}
-  , \code{\link[ggalluvial]{geom_flow}}, \code{\link[ggalluvial]{geom_stratum}}
+\code{\link[easyalluvial]{alluvial_wide}} ,
+ \code{\link[ggalluvial]{geom_flow}} , \code{\link[ggalluvial]{geom_stratum}}
+ , \code{\link[easyalluvial]{manip_bin_numerics}}
 }

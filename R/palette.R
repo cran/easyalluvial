@@ -11,7 +11,8 @@ if(getRversion() >= "2.15.1"){
 
 
 #' @title compose palette from qualitative RColorBrewer palettes
-#' @description combines all unique values found in all qualitative RColorBrewer palettes
+#' @description uses c('#FF0065','#009850', '#A56F2B', '#005EAA', '#710500', '#7B5380', '#9DD1D1')
+#' and then adds all unique values found in all qualitative RColorBrewer palettes
 
 #' @return vector with hex values
 #' @examples
@@ -25,7 +26,7 @@ palette_qualitative = function(){
 
   qual_col_pals = RColorBrewer::brewer.pal.info[RColorBrewer::brewer.pal.info$category == 'qual',]
   palette = unlist(mapply(RColorBrewer::brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
-  return( unique(palette) )
+  return( unique(c( c('#FF0065','#009850', '#A56F2B', '#005EAA', '#710500', '#7B5380', '#9DD1D1'),palette) ) )
 }
 
 #' @title color filters for any vector of hex color values
