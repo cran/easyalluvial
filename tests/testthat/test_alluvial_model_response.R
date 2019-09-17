@@ -168,7 +168,54 @@ test_that('alluvial_model_response'
     
     vdiffr::expect_doppelganger('model_response_cat_multi', p)
     
-})
+    # all factors -----------------------------------------------
+    
+    set.seed(0)
+    
+    df = titanic %>%
+      select_if(is.factor)
+    
+    set.seed(0)
+    m = randomForest::randomForest( Survived ~ ., df)
+    imp = m$importance
+    
+    expect_warning( {dspace = get_data_space(df, imp, degree = 3, max_levels = 5)} )
+    
+    expect_true( nrow(dspace) == 30 )
+    
+    pred = predict(m, newdata = dspace,type = 'response')
+    p = alluvial_model_response(pred, dspace, imp, degree = 3)
+    vdiffr::expect_doppelganger('model_response_all_facs', p)
+    
+    # factors as character ---------------------------------------
+    
+    df = titanic %>%
+      select_if(is.factor) %>%
+      mutate_at( vars(Pclass, Sex, title), as.character() )
+    
+    m = randomForest::randomForest( Survived ~ ., df)
+    imp = m$importance
+    
+    expect_warning( {dspace = get_data_space(df, imp, degree = 3, max_levels = 5)} )
+    
+    pred = predict(m, newdata = dspace,type = 'response')
+    p = alluvial_model_response(pred, dspace, imp, degree = 3)
+
+    # all numerics ----------------------------------------------
+    
+    set.seed(0)
+    df = select(mtcars2, -ids) %>%
+      select_if(is.numeric)
+    
+    m = randomForest::randomForest( disp ~ ., df)
+    imp = m$importance
+    dspace = get_data_space(df, imp, degree = 3)
+
+    pred = predict(m, newdata = dspace)
+    
+    p = alluvial_model_response(pred, dspace, imp, degree = 3)
+    vdiffr::expect_doppelganger('model_response_all_nums', p)
+          })
 
 test_that('alluvial_model_response_caret'
           , {
@@ -179,37 +226,70 @@ test_that('alluvial_model_response_caret'
   train = caret::train( disp ~ ., df, method = 'lm',trControl = caret::trainControl(method = 'none') )
   p = alluvial_model_response_caret(train, degree = 3)
   
-  vdiffr::expect_doppelganger('model_response_caret_lm', p)
+  # vdiffr::expect_doppelganger('model_response_caret_lm', p)
   
   p = alluvial_model_response_caret(train, degree = 3, method = 'pdp')
-  vdiffr::expect_doppelganger('model_response_caret_lm_pdp', p)
+  # vdiffr::expect_doppelganger('model_response_caret_lm_pdp', p)
   
   
   set.seed(0)
   train = caret::train( disp ~ ., df, method = 'rf',trControl = caret::trainControl(method = 'none'), importance = T )
   p = alluvial_model_response_caret(train, degree = 3)
   
-  vdiffr::expect_doppelganger('model_response_caret_rf', p)
+  # vdiffr::expect_doppelganger('model_response_caret_rf', p)
   
   # change bin labels
   p = alluvial_model_response_caret(train, degree = 3, bin_labels =  c('A','B','C','D','E') )
   
-  vdiffr::expect_doppelganger('model_response_caret_new_labs', p)
+  # vdiffr::expect_doppelganger('model_response_caret_new_labs', p)
   
   # categorical bivariate response 
   set.seed(1)
   train = caret::train( am ~ ., df, method = 'rf',trControl = caret::trainControl(method = 'none'), importance = T )
   p = alluvial_model_response_caret(train, degree = 3)
-  vdiffr::expect_doppelganger('model_response_caret_cat_bi', p)
+  # vdiffr::expect_doppelganger('model_response_caret_cat_bi', p)
   
   
   # categorical multivariate response
   set.seed(1)
   train = caret::train( cyl ~ ., df, method = 'rf',trControl = caret::trainControl(method = 'none'), importance = T )
   p = alluvial_model_response_caret(train, degree = 3)
-  vdiffr::expect_doppelganger('model_response_caret_cat_multi', p)
+  # vdiffr::expect_doppelganger('model_response_caret_cat_multi', p)
   
-          
+  # all facs
+  set.seed(1)
+  
+  df = titanic %>%
+    select_if( is.factor )
+  
+  train = caret::train( Survived ~ ., df, method = 'rf',trControl = caret::trainControl(method = 'none'), importance = T )
+  p = alluvial_model_response_caret(train, degree = 3)
+  # vdiffr::expect_doppelganger('all_facs_caret', p)
+  
+  # all nums
+  set.seed(1)
+  
+  df = select(mtcars2, -ids) %>%
+    select_if( is.numeric )
+  
+  train = caret::train( disp ~ ., df, method = 'rf',trControl = caret::trainControl(method = 'none'), importance = T )
+  p = alluvial_model_response_caret(train, degree = 3)
+  # vdiffr::expect_doppelganger('all_nums_caret', p)
+  
+  # titanic example, + mix of factor and character features
+  # regular random Forest will not allow this caret works around it
+  
+  trc <- caret::trainControl(method = "none")
+  
+  df = titanic %>%
+    select(Survived, Sex, Embarked, title)
+  
+  m <- caret::train(Survived~.,data = df, method="rf",trControl=trc,importance=T)
+  p = alluvial_model_response_caret(train = m,degree = 3,bins=5,stratum_label_size = 2.8) 
+  
+  p_grid = add_marginal_histograms(p, data_input = df, plot = F) %>%
+    add_imp_plot(p, df)
+
   })
 
 test_that('params_bin_numeric_pred',{
@@ -264,6 +344,6 @@ test_that('n_feats == degree',{
   
   p_imp = plot_imp(p, df)
   
-  vdiffr::expect_doppelganger('p_imp_nfeats_equal_degree', p_imp)
+  # vdiffr::expect_doppelganger('p_imp_nfeats_equal_degree', p_imp)
 
 })
