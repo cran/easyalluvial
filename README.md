@@ -1,17 +1,21 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# easyalluvial <img src="https://www.datisticsblog.com/easyalluvial_logo_square.png" alt="logo" width="180" height="180" align = "right"/>
+# easyalluvial <a href='https://erblast.github.io/easyalluvial'><img src='man/figures/logo.png' align="right" height="139" /></a>
 
 [![Travis CI Build
 Status](https://travis-ci.org/erblast/easyalluvial.svg?branch=master)](https://travis-ci.org/erblast/easyalluvial)
 [![AppVeyor Build
 Status](https://ci.appveyor.com/api/projects/status/github/erblast/easyalluvial?branch=master&svg=true)](https://ci.appveyor.com/project/erblast/easyalluvial)
 
-[![Coverage Status](https://img.shields.io/codecov/c/github/erblast/easyalluvial/master.svg)](https://codecov.io/github/erblast/easyalluvial?branch=master)
-[![CRAN last release](https://www.r-pkg.org/badges/last-release/easyalluvial)](https://CRAN.R-project.org/package=easyalluvial)
-[![CRAN total downloads](https://cranlogs.r-pkg.org/badges/grand-total/easyalluvial)](https://CRAN.R-project.org/package=easyalluvial)
-
+[![Coverage
+Status](https://img.shields.io/codecov/c/github/erblast/easyalluvial/master.svg)](https://codecov.io/github/erblast/easyalluvial?branch=master)
+[![CRAN last
+release](https://www.r-pkg.org/badges/last-release/easyalluvial)](https://CRAN.R-project.org/package=easyalluvial)
+[![CRAN total
+downloads](https://cranlogs.r-pkg.org/badges/grand-total/easyalluvial)](https://CRAN.R-project.org/package=easyalluvial)
+[![CRAN monthly
+downloads](https://cranlogs.r-pkg.org/badges/easyalluvial)](https://CRAN.R-project.org/package=easyalluvial)
 
 Alluvial plots are similar to [sankey
 diagrams](https://en.wikipedia.org/wiki/Sankey_diagram) and visualise
@@ -43,6 +47,8 @@ for data exploration.
   - marginal histograms
   - **model agnostic partial dependence and model response alluvial
     plots with 4 dimensions**
+  - **[interactive plots with `easyalluvial` and
+    `parcats`](https://erblast.github.io/parcats/articles/parcats.html)**
 
 ## Installation
 
@@ -60,15 +66,15 @@ install.packages('easyalluvial')
 devtools::install_github("erblast/easyalluvial")
 ```
 
-## Tutorials
+## Documentation
 
-In order to learn about all the features an how they can be useful check
-out the following tutorials:
-
-  - [Data exploration with alluvial
-    plots](https://www.datisticsblog.com/2018/10/intro_easyalluvial/#features)
-  - [Visualise model response with alluvial
-    plots](https://www.datisticsblog.com/2019/04/visualising-model-response-with-easyalluvial/)
+  - [pkgdown website](https://erblast.github.io/easyalluvial/)
+      - [Data Exploration with Alluvial
+        Plots](https://erblast.github.io/easyalluvial/articles/data_exploration.html)
+      - [Visualising Model
+        Response](https://erblast.github.io/easyalluvial/articles/model_response.html)
+      - [Interactive Plots with
+        parcats](https://erblast.github.io/easyalluvial/articles/parcats.html)
 
 ## Examples
 
@@ -157,6 +163,22 @@ alluvial_wide( data = mtcars2
 
 ![](man/figures/README-unnamed-chunk-3-1.png)<!-- -->
 
+### Interactive Graphs
+
+``` r
+
+suppressPackageStartupMessages( require(parcats) )
+
+p = alluvial_wide(mtcars2, max_variables = 5)
+
+parcats(p, marginal_histograms = TRUE, data_input = mtcars2)
+```
+
+![demo](https://raw.githubusercontent.com/erblast/parcats/master/man/figures/demo1.gif)
+
+  - **[Live
+    Widget](https://erblast.github.io/parcats/articles/parcats.html)**
+
 ### Partial Dependence Alluvial Plots
 
 Alluvial plots are capable of displaying higher dimensional data on a
@@ -204,4 +226,21 @@ p_grid = add_marginal_histograms(p, df, plot = F) %>%
   add_imp_plot(p, df)
 ```
 
-![](man/figures/README-unnamed-chunk-4-1.png)<!-- -->
+![](man/figures/README-unnamed-chunk-5-1.png)<!-- -->
+
+### Interactive Partial Dependence Plot
+
+``` r
+df = select(mtcars2, -ids )
+m = randomForest::randomForest( disp ~ ., df)
+imp = m$importance
+dspace = get_data_space(df, imp, degree = 3)
+pred = predict(m, newdata = dspace)
+p = alluvial_model_response(pred, dspace, imp, degree = 3)
+
+parcats(p, marginal_histograms = TRUE, imp = TRUE, data_input = df)
+```
+
+![demo](https://raw.githubusercontent.com/erblast/parcats/master/man/figures/demo2.gif)
+- **[Live
+Widget](https://erblast.github.io/parcats/articles/parcats.html)**

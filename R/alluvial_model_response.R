@@ -258,7 +258,7 @@ get_data_space = function(df, imp, degree = 4, bins = 5, max_levels = 10){
   return(dspace)
 }
 
-#'@title get predictions compatibel with the partial dependence plotting method
+#'@title get predictions compatible with the partial dependence plotting method
 #'@description Alluvial plots are capable of displaying higher dimensional data
 #'  on a plane, thus lend themselves to plot the response of a statistical model
 #'  to changes in the input data across multiple dimensions. The practical limit
@@ -772,6 +772,7 @@ alluvial_model_response_caret = function(train, degree = 4, bins = 5
 #' @return OUTPUT_DESCRIPTION
 #' @seealso \code{\link[e1071]{skewness}}
 #' @rdname use_e1071
+#' @noRd
 #' @importFrom e1071 skewness
 use_e1071 = function(x){
   e1071::skewness(x)

@@ -49,7 +49,7 @@ manip_factor_2_numeric = function(vec){
 #' @param bins number of bins for numerical variables, Default: 5
 #' @param bin_labels labels for the bins from low to high, Default: c("LL",
 #'   "ML", "M", "MH", "HH"). Can also be one of c('mean', 'median', 'min_max',
-#'   'cuts'), the corresppnding summary function will supply the labels.
+#'   'cuts'), the corresponding summary function will supply the labels.
 #' @param scale logical, Default: T
 #' @param center logical, Default: T
 #' @param transform logical, apply Yeo Johnson Transformation, Default: T
@@ -202,6 +202,7 @@ manip_bin_numerics = function(x
     
     join_by = names(df_min)[! names(df_min) %in% numerics ]
     join_by = c(join_by, 'easyalluvialid')
+    join_by = unique(join_by)
     
     data_new = df_min %>%
       left_join(df_max, by = join_by )
