@@ -4,7 +4,15 @@
 \alias{get_pdp_predictions}
 \title{get predictions compatible with the partial dependence plotting method}
 \usage{
-get_pdp_predictions(df, imp, m, degree = 4, bins = 5, .f_predict = predict)
+get_pdp_predictions(
+  df,
+  imp,
+  m,
+  degree = 4,
+  bins = 5,
+  .f_predict = predict,
+  parallel = FALSE
+)
 }
 \arguments{
 \item{df}{dataframe, training data}
@@ -24,7 +32,14 @@ number might result in too many flows, Default: 5}
 
 \item{.f_predict}{corresponding model predict() function. Needs to accept `m`
 as the first parameter and use the `newdata` parameter. Supply a wrapper for
-predict functions with x-y synthax.}
+predict functions with x-y syntax. For parallel processing the predict
+method of object classes will not always get imported correctly to the worker
+environment. We can pass the correct predict method via this parameter for 
+example randomForest:::predict.randomForest. Note that a lot of modeling
+packages do not export the predict method explicitly and it can only be found
+using :::.}
+
+\item{parallel}{logical, turn on parallel processing. Default: FALSE}
 }
 \value{
 vector, predictions
@@ -48,8 +63,16 @@ Alluvial plots are capable of displaying higher dimensional data
  combination.
 }
 \details{
-see https://christophm.github.io/interpretable-ml-book/pdp.html
+For more on partial dependency plots see
+ [https://christophm.github.io/interpretable-ml-book/pdp.html].
 }
+\section{Parallel Processing}{
+ 
+ We are using `furrr` and the `future` package to paralelize some of the
+ computational steps for calculating the predictions. It is up to the user
+ to register a compatible backend (see \link[future]{plan}).
+}
+
 \examples{
  df = mtcars2[, ! names(mtcars2) \%in\% 'ids' ]
  m = randomForest::randomForest( disp ~ ., df)
@@ -60,7 +83,18 @@ see https://christophm.github.io/interpretable-ml-book/pdp.html
                             , degree = 3
                             , bins = 5)
 
+# parallel processing --------------------------
+\dontrun{
+ future::plan("multisession")
+ 
+ # note that we have to pass the predict method via .f_predict otherwise
+ # it will not be available in the worker's environment.
+ 
+ pred = get_pdp_predictions(df, imp
+                            , m
+                            , degree = 3
+                            , bins = 5,
+                            , parallel = TRUE
+                            , .f_predict = randomForest:::predict.randomForest)
 }
-\seealso{
-\code{\link[progress]{progress_bar}}
 }
