@@ -1,6 +1,6 @@
 Package: easyalluvial
 Title: Generate Alluvial Plots with a Single Line of Code
-Version: 0.3.0
+Version: 0.3.1
 Authors@R: person( "Bjoern", "Koneswarakantha", role = c("aut","cre"), email = "datistics@gmail.com", comment = c(ORCID = "0000-0003-4585-7799") )
 URL: https://github.com/erblast/easyalluvial/
 Description: Alluvial plots are similar to sankey diagrams and visualise categorical data 
@@ -21,18 +21,18 @@ Encoding: UTF-8
 LazyData: true
 Depends: R(>= 3.5)
 Suggests: testthat, covr, ISLR, nycflights13, vdiffr (>= 0.3.1),
-        parcats, pkgdown, mlbench, earth, workflows, future, furrr,
-        e1071, caret, parsnip, vip, rpart, glmnet, xgboost
-RoxygenNote: 7.1.1
+        pkgdown, mlbench, earth, workflows, future, furrr, e1071,
+        caret, parsnip, vip, rpart, glmnet, xgboost
+RoxygenNote: 7.2.0
 Imports: purrr , tidyr (>= 1.0.0) , dplyr , forcats , ggalluvial (>=
         0.9.1) , ggplot2 (>= 3.2.0) , ggridges , RColorBrewer , recipes
         (>= 0.1.5) , rlang , stringr , magrittr , tibble , gridExtra ,
         randomForest , progressr , progress
 Language: en-US
 NeedsCompilation: no
-Packaged: 2021-01-13 08:30:17 UTC; koneswab
+Packaged: 2022-07-05 06:01:51 UTC; koneswab
 Author: Bjoern Koneswarakantha [aut, cre]
     (<https://orcid.org/0000-0003-4585-7799>)
 Maintainer: Bjoern Koneswarakantha <datistics@gmail.com>
 Repository: CRAN
-Date/Publication: 2021-01-13 10:40:09 UTC
+Date/Publication: 2022-07-05 07:30:08 UTC
