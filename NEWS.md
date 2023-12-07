@@ -1,3 +1,7 @@
+# Version 0.3.2 submitted to CRAN 20231207
+- check for vip pkg installation before executing example of alluvial_model_response_parsnip
+- option for using geom_text instead of geom_label (by https://github.com/gernophil)
+
 # Version 0.3.1 submitted to CRAN 20220704
 - cleanup package dependencies
 
@@ -49,7 +53,7 @@ argument which will be converted to bin label.
 # 20181812 0.1.7
 CRAN released
 
-# 20181118
+# 20181118 0.0.1
 CRAN submission
 
 
